@@ -3,28 +3,31 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
+
+#include "my_define.h"
 
 class SearchResult;
+class LTP;
 
 class AnswerExtract{
 private:
     static const double alpha_;
-    std::map<std::string, double> answer_map_;
+    std::unordered_map<std::string, double> answer_map_;
     double score_;
     std::string answer_;
 
     static void calc(const std::string &type, const double &rate,
-                     const std::vector<std::string> &words,
-                     const std::vector<int> &flag,
-                     std::map<std::string, double> &answer_map,
-                     void *postagger);
+                     const Sentence &words,
+                     const SentenceFlag &flag,
+                     std::unordered_map<std::string, double> &answer_map,
+                     const LTP &ltp);
 
 public:
     AnswerExtract(const std::vector<double> &scores,
                   const SearchResult &result,
-                  const std::vector<std::string> &query_type,
-                  void *postagger);
+                  const Sentence &query_type,
+                  const LTP &ltp);
 
     std::string answer() const{return answer_;}
     double score() const{return score_;}

@@ -5,6 +5,8 @@
 #include <cmath>
 #include <cstddef>
 
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -30,11 +32,19 @@ struct Segment{
         return begin != seg.begin || end != seg.end;
     }
 
-    ~Segment() = default;
+    void Load(std::istream & in){
+        in >> begin;
+        end = begin + 1;
+    }
+    void Save(std::ostream & out){
+        out << begin << std::endl;
+    }
 
+    ~Segment() = default;
+/*
     void display(FILE *fp = stderr){
         fprintf(fp, "segment = [%lu, %lu)\n", begin, end);
-    }
+    }*/
 };
 
 class DocPosition{
@@ -49,7 +59,7 @@ public:
     size_t docID() const{return docID_;}
     bool empty() const{return position_.empty();}
     double weight() const{return weight_;}
-    void SetWegith(double idf){
+    void SetWeight(double idf){
         if (position_.size() == 0)
             weight_ = 0;
         else
@@ -63,15 +73,18 @@ public:
 
     const DocPosition operator + (const DocPosition &pos) const;
 
-    ~DocPosition() = default;
+    void Load(std::istream &in);
+    void Save(std::ostream &out);
 
+    ~DocPosition() = default;
+/*
     void display(FILE *fp = stderr){
         fprintf(fp, "docID = %lu\n", docID_);
         for (auto & ele : position_)
             ele.display(fp);
         fprintf(fp, "\n");
     }
-    size_t tot_number(){return position_.size();}
+    size_t tot_number(){return position_.size();}*/
 };
 
 class PostingList{
@@ -91,8 +104,11 @@ public:
     void SetWeight(const size_t doc_number){
         idf_ = log(1.0 * doc_number / posting_.size());
         for (auto & doc : posting_)
-            doc.SetWegith(idf_);
+            doc.SetWeight(idf_);
     }
+
+    void Load(std::ifstream &in);
+    void Save(std::ofstream &out);
 
     const PostingList operator & (const PostingList &post) const;
     const PostingList operator | (const PostingList &post) const;
@@ -118,8 +134,11 @@ public:
 
     void Combine(const PostingList &post);
 
-    ~PostingList() = default;
+    void Load(std::istream & in);
+    void Save(std::ostream & out);
 
+    ~PostingList() = default;
+/*
     void display(FILE *fp = stderr){
         for (auto & ele : posting_)
             ele.display(fp);
@@ -130,7 +149,7 @@ public:
         for (auto & ele : posting_)
             res += ele.tot_number();
         return res;
-    }
+    }*/
 };
 
 class Index{
@@ -151,8 +170,11 @@ public:
     void SetLength(const size_t doc_number);
     double length(const size_t idx) const{return length_[idx];}
 
-    ~Index() = default;
+    void Load(std::ifstream &in);
+    void Save(std::ofstream &out);
 
+    ~Index() = default;
+/*
     void display(FILE *fp = stderr){
         fprintf(stderr, "term_number = %lu\n", term_number_);
         for (size_t i = 0; i < term_number_; i ++){
@@ -172,7 +194,7 @@ public:
             vec.push_back(make_pair(dict.tot_number(), term));
         }
         return vec;
-    }
+    }*/
 };
 
 #endif

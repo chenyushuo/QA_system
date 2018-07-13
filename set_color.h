@@ -11,32 +11,38 @@ enum Color{closed, highlight, underline = 4,
            blue, purple, darkgreen, white};
 
 inline void SetColor(std::ostream &os, Color color){
+#ifdef CYS_COMPUTER
     os << "\033[" << color << "m";
+#endif
 }
-
+/*
 inline void SetColor(FILE *fp, Color color){
     fprintf(fp, "\033[%dm", color);
-}
+}*/
 
 inline void SetCursor(std::ostream &os, size_t x, size_t y){
+#ifdef CYS_COMPUTER
     os << "\033[" << y << ";" << x << "H";
+#endif
 }
-
+/*
 inline void SetCursor(FILE *fp, size_t x, size_t y){
     fprintf(fp, "\033[%lu;%luH", y, x);
-}
+}*/
 
 inline void ResetScreen(std::ostream &os){
+#ifdef CYS_COMPUTER
     os << "\033[2J";
     SetCursor(os, 1, 1);
     SetColor(os, white);
+#endif
 }
-
+/*
 inline void ResetScreen(FILE *fp){
     fprintf(fp, "\033[2J");
     SetCursor(fp, 1, 1);
     SetColor(fp, white);
-}
+}*/
 
 /*
 \033[0m 关闭所有属性

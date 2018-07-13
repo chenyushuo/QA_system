@@ -7,6 +7,8 @@
 #include <vector>
 #include <iterator>
 
+#include "my_define.h"
+
 using namespace std;
 
 Replacer::Replacer(const string &replace_file){
@@ -26,7 +28,7 @@ Replacer::Replacer(const string &replace_file){
     }
 }
 
-void Replacer::Process(vector<string> & vec){
+void Replacer::Process(Sentence & vec) const{
     vector<string> tmp;
     for (size_t j = 0; j < source.size(); j ++){
         auto & s = source[j];

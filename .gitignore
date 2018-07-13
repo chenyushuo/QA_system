@@ -4,6 +4,8 @@
 *.txt
 *.o
 main
+main_old
+main_fake.cpp
 *.log
 *.ans
 *.swp
@@ -15,3 +17,4 @@ test.*
 test
 *.html
 download
+*.dat

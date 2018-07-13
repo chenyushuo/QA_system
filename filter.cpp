@@ -5,10 +5,10 @@
 
 using namespace std;
 
-Filter::Filter(const std::string &stop_word){
+StopWordsFilter::StopWordsFilter(const std::string &stop_word){
     ifstream fin(stop_word.c_str());
     if (!fin.is_open()){
-        fprintf(stderr, "can't open stop word!\n");
+        cerr << "can't open stop word!" << endl;
     }
     else{
         string line;

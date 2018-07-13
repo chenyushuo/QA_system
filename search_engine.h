@@ -1,16 +1,21 @@
 #ifndef SEARCH_ENGINE_H
 #define SEARCH_ENGINE_H
 
+#include <vector>
 #include <string>
 
 #include "document.h"
 #include "index.h"
-#include "query.h"
-#include "search_result.h"
-#include "filter.h"
-#include "replacer.h"
+#include "ltp.h"
+#include "my_define.h"
+
+class Query;
+class SearchResult;
 
 class SearchEngine{
+public:
+    static const double kLimit;
+
 private:
     enum FlagStatus{
         none = 000,
@@ -24,37 +29,40 @@ private:
     const std::string file_list_;
     Document doc_list_;
     Index title_index_, body_index_;
-    void *segmentor_;
-    void *postagger_;
-    Filter filter_;
-    Replacer replacer_;
+    const LTP & ltp_;
 
     static void LoadFile(const size_t idx, const std::string &file_name, Index &index,
-                         const Filter &filter);
-    static PostingList BasicAccurateSearch(const std::vector<Words> &query,
+                         const LTP &ltp);
+    static PostingList BasicAccurateSearch(const Paragraph &query,
                                            const Index &idx);
-    static void BasicRankedSearch(const std::vector<Words> &query,
+    static void BasicRankedSearch(const Paragraph &query,
                                   const std::vector<double> &term_frequency,
                                   const Index &idx,
                                   std::vector<double> &final_scores, const double rate);
 
-    PostingList AccurateSearch(const std::vector<Words> &query);
-    PostingList RankedSearch(const std::vector<Words> &query,
+    PostingList AccurateSearch(const Paragraph &query);
+    PostingList RankedSearch(const Paragraph &query,
                              std::vector<double> &scores);
 
 public:
-    SearchEngine(const std::string &file_list = "file_list.txt",
-                 const std::string &weight_file = "time.txt",
-                 const std::string &stop_word = "stop_words.txt",
-                 const std::string &replace_file = "replace.txt");
+    SearchEngine(const LTP & ltp,
+                 const std::string &file_list = file_list_path,
+                 const std::string &weight_file = weight_file_path,
+                 const std::string &data_file = data_file_path);
 
     SearchResult Search(const Query &query, std::vector<double> &scores,
                         const size_t limits = 10);
-    std::pair<std::string, double> Search(const std::vector<std::string> &keyword,
-                                          const std::vector<std::string> &query_type);
-    void Run();
 
-    ~SearchEngine();
+    std::pair<std::string, double> Search(const Sentence &keyword,
+                                          const Sentence &query_type);
+
+    std::pair<std::string, double> Search(const std::pair<Sentence, Sentence> &pr){
+        return Search(pr.first, pr.second);
+    }
+
+    // void Run();
+
+    ~SearchEngine() = default;
 };
 
 #endif

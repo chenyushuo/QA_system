@@ -9,63 +9,76 @@
 #include <algorithm>
 #include <functional>
 
+#include "document.h"
+#include "index.h"
+#include "ltp.h"
+#include "query.h"
 #include "search_result.h"
-#include "segment_dll.h"
-#include "postag_dll.h"
-#include "set_color.h"
-#include "kbhit.h"
 #include "answer_extract.h"
+#include "kbhit.h"
+#include "set_color.h"
+#include "my_define.h"
 
 using namespace std;
 
+const double SearchEngine::kLimit = 4000.0;
 const size_t SearchEngine::npos = -1;
 
 void SearchEngine::LoadFile(const size_t idx, const string &file_name, Index &index,
-                            const Filter &filter)
+                            const LTP &ltp)
 {
     ifstream in(file_name.c_str());
     if (!in.is_open()){
-        fprintf(stderr, "can't open %s !\n", file_name.c_str());
+        cerr << "can't open " << file_name.c_str() << " !"<< endl;
     }
     else{
         istream_iterator<string> iter(in), eof;
         vector<string> words(iter, eof);
-        auto func = [&filter](const string &str){return filter.IsVaild(str);};
-        auto ptr = stable_partition(words.begin(), words.end(), func);
-        words.erase(ptr, words.end());
+        ltp.Filter(words);
         index.append(idx, words);
     }
     in.close();
 }
 
-SearchEngine::SearchEngine(const string &file_list,
+SearchEngine::SearchEngine(const LTP &ltp,
+                           const string &file_list,
                            const string &weight_file,
-                           const string &stop_word,
-                           const string &replace_file) :
+                           const string &data_file) :
     file_list_(file_list),
-    doc_list_(weight_file),
-    segmentor_(segmentor_create_segmentor("/home/cys/ltp/ltp_data/cws.model")),
-    postagger_(postagger_create_postagger("/home/cys/ltp/ltp_data/pos.model")),
-    filter_(stop_word),
-    replacer_(replace_file)
+    doc_list_(file_list, weight_file),
+    ltp_(ltp)
 {
-    ifstream fin(file_list_.c_str());
-    if (!fin.is_open()){
-        fprintf(stderr, "can't open file_list!\n");
-        exit(1);
+    ifstream in(data_file.c_str());
+    if (in.is_open()){
+        title_index_.Load(in);
+        body_index_.Load(in);
+        in.close();
     }
+    else{
+        ifstream fin(file_list_.c_str());
+        if (!fin.is_open()){
+            cerr << "can't open file_list!" << endl;
+            exit(1);
+        }
 
-    string doc;
-    while (getline(fin, doc)){
-        size_t idx = doc_list_.append(doc);
-        LoadFile(idx, doc + ".title", title_index_, filter_);
-        LoadFile(idx, doc + ".body", body_index_, filter_);
+        string doc;
+        while (getline(fin, doc)){
+            size_t idx = doc_list_.find(doc);
+            cerr << doc << endl;
+            LoadFile(idx, doc + ".title", title_index_, ltp_);
+            LoadFile(idx, doc + ".body", body_index_, ltp_);
+        }
+
+        fin.close();
+
+        title_index_.SetLength(doc_list_.doc_number());
+        body_index_.SetLength(doc_list_.doc_number());
+
+        ofstream fout(data_file.c_str());
+        title_index_.Save(fout);
+        body_index_.Save(fout);
+        fout.close();
     }
-
-    title_index_.SetLength(doc_list_.doc_number());
-    body_index_.SetLength(doc_list_.doc_number());
-
-    fin.close();
     /*fprintf(stderr, "title :\n");
     title_index_.display();
 
@@ -74,14 +87,12 @@ SearchEngine::SearchEngine(const string &file_list,
     /*auto vec = body_index_.tot_number();
     sort(vec.rbegin(), vec.rend());
     FILE *fp = fopen("terms.txt", "w");
-    // for (size_t i = 0; i < 100; i ++)
-        // fprintf(fp, "%s\n", vec[i].second.c_str());
     for (auto ele : vec)
         fprintf(fp, "times = %lu, term = %s\n", ele.first, ele.second.c_str());
     fclose(fp);*/
 }
 
-PostingList SearchEngine::BasicAccurateSearch(const vector<Words> &query,
+PostingList SearchEngine::BasicAccurateSearch(const Paragraph &query,
                                               const Index &idx)
 {
     PostingList post;
@@ -143,23 +154,22 @@ PostingList SearchEngine::BasicAccurateSearch(const vector<Words> &query,
     return post;
 }
 
-PostingList SearchEngine::AccurateSearch(const vector<Words> & query){
+PostingList SearchEngine::AccurateSearch(const Paragraph & query){
     return BasicAccurateSearch(query, title_index_)
          | BasicAccurateSearch(query, body_index_);
 }
 
-void SearchEngine::BasicRankedSearch(const vector<Words> & query,
+void SearchEngine::BasicRankedSearch(const Paragraph & query,
                                      const vector<double> &term_frequency,
                                      const Index &idx,
                                      vector<double> &final_scores, const double rate)
 {
     vector<double> scores(final_scores.size(), 0);
     for (size_t i = 0; i < query.size(); i ++){
-        const Words & term = query[i];
+        const Sentence & term = query[i];
         PostingList cur;
         bool isfirst = true;
         for (auto & word : term){
-            cerr << word << ' ';
             if (isfirst){
                 cur = idx[word];
                 isfirst = false;
@@ -168,7 +178,6 @@ void SearchEngine::BasicRankedSearch(const vector<Words> & query,
                 cur.Combine(idx[word]);
             }
         }
-        cerr << endl;
         cur.SetWeight(final_scores.size());
         double weight_of_query = term_frequency[i] * cur.idf();
         for (auto & doc : cur.posting()){
@@ -180,7 +189,6 @@ void SearchEngine::BasicRankedSearch(const vector<Words> & query,
             for (auto & word : term)
                 total += word;
             cur = idx[total];
-            cur.display();
             cur.SetWeight(final_scores.size());
             weight_of_query = term_frequency[i] * cur.idf() * term.size();
             for (auto & doc : cur.posting()){
@@ -188,14 +196,6 @@ void SearchEngine::BasicRankedSearch(const vector<Words> & query,
             }
         }
     }
-    /*for (size_t i = 0; i < words.size(); i ++){
-        const string & word = words[i];
-        PostingList cur = idx[word];
-        double weight_of_query = term_frequency[i] * cur.idf();
-        for (auto & doc : cur.posting()){
-            scores[doc.docID()] += weight_of_query * doc.weight();
-        }
-    }*/
 
     for (size_t i = 0; i < scores.size(); i ++){
         double len = idx.length(i);
@@ -207,10 +207,11 @@ void SearchEngine::BasicRankedSearch(const vector<Words> & query,
         final_scores[i] += scores[i] * rate;
 }
 
-PostingList SearchEngine::RankedSearch(const vector<Words> & query,
-                                       vector<double> &scores){
+PostingList SearchEngine::RankedSearch(const Paragraph & query,
+                                       vector<double> &scores)
+{
     size_t doc_number = doc_list_.doc_number();
-    vector<string> words;
+    Sentence words;
     vector<double> term_frequency;
     for (auto & term : query){
         string total;
@@ -235,7 +236,7 @@ PostingList SearchEngine::RankedSearch(const vector<Words> & query,
 
     BasicRankedSearch(query, term_frequency, title_index_, scores, 0.6);
     BasicRankedSearch(query, term_frequency, body_index_, scores, 0.4);
-    
+
     for (size_t i = 0; i < doc_number; i ++)
         scores[i] *= doc_list_.weight(i);
 
@@ -244,11 +245,6 @@ PostingList SearchEngine::RankedSearch(const vector<Words> & query,
         rank[i] = i;
     auto func = [&scores](const int &a, const int &b){return scores[a] > scores[b];};
     sort(rank.begin(), rank.end(), func);
-
-    /*for (size_t i = 0; i < doc_number; i ++)
-        if (scores[rank[i]] != 0)
-            cerr << "i = " << i << " id = " << rank[i] <<
-            " scores = " << scores[rank[i]] << endl;*/
 
     PostingList post;
     for (size_t i = 0; i < doc_number; i ++){
@@ -271,23 +267,23 @@ SearchResult SearchEngine::Search(const Query &query, vector<double> &scores,
         SearchResult(RankedSearch(query.query(), scores), query, doc_list_, limits));
 }
 
-pair<string, double> SearchEngine::Search(const vector<string> &keyword,
-                                          const vector<string> &query_type)
+pair<string, double> SearchEngine::Search(const Sentence &keyword,
+                                          const Sentence &query_type)
 {
-    cerr << "test" << endl;
-    Query query(segmentor_, filter_, replacer_, keyword);
+    // cerr << "query_type = " << query_type[0] << endl;
+    Query query(ltp_, keyword);
     vector<double> scores(doc_list_.doc_number(), 0);
     SearchResult result = Search(query, scores, 20);
     sort(scores.rbegin(), scores.rend());
-    AnswerExtract answer_extract(scores, result, query_type, postagger_);
-    cerr << "答案为：" << answer_extract.answer() << endl;
-    cerr << result << endl;
+    AnswerExtract answer_extract(scores, result, query_type, ltp_);
+    // cerr << "答案为：" << answer_extract.answer() << endl;
+    // cerr << result << endl;
     return make_pair(answer_extract.answer(), answer_extract.score());
 }
 
-void SearchEngine::Run(){
+/*void SearchEngine::Run(){
     ResetScreen(cerr);
-    Query query(segmentor_, filter_, replacer_);
+    Query query(ltp_);
     SetColor(cerr, green);
     SetColor(cerr, highlight);
     cerr << "搜索结果显示条数：";
@@ -300,14 +296,7 @@ void SearchEngine::Run(){
     in >> limits;
     vector<double> scores(doc_list_.doc_number(), 0);
     cerr << Search(query, scores, limits) << endl;
-    // for (size_t i = 0; i < scores.size(); i ++)
-        // cerr << "i = " << " scores[i] = " << scores[i] << endl;
     InitKeyboard();
     CheckKeyboard();
     CloseKeyboard();
-}
-
-SearchEngine::~SearchEngine(){
-    segmentor_release_segmentor(segmentor_);
-    postagger_release_postagger(postagger_);
-}
+}*/

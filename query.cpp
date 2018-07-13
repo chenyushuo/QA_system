@@ -11,24 +11,22 @@
 #include <functional>
 
 #include "set_color.h"
-#include "segment_dll.h"
-#include "filter.h"
+#include "ltp.h"
 
 using namespace std;
 
-Query::Query(void *segmentor, Filter filter, Replacer replacer) :
+Query::Query(const LTP &ltp) :
     accurate_(false)
 {
-    SetColor(stderr, green);
-    SetColor(stderr, highlight);
-    fprintf(stderr, "请输入关键字：");
-    SetColor(stderr, white);
-    SetColor(stderr, closed);
+    SetColor(cerr, green);
+    SetColor(cerr, highlight);
+    cerr << "请输入关键字：";
+    SetColor(cerr, white);
+    SetColor(cerr, closed);
     string line;
     getline(cin, line);
     stringstream in(line);
     string term;
-    auto func = [&filter](const string &str){return filter.IsVaild(str);};
     while (in >> term){
         if (term == "+" || term == "-" || term == "&" || term == "|" || term == "^"){
             accurate_ = true;
@@ -36,28 +34,20 @@ Query::Query(void *segmentor, Filter filter, Replacer replacer) :
             continue;
         }
         vector<string> words;
-        segmentor_segment(segmentor, term, words);
-        replacer.Process(words);
-        auto ptr = stable_partition(words.begin(), words.end(), func);
-        words.erase(ptr, words.end());
+        ltp.Segment(term, words, LTP::MODIFY);
         if (!words.empty())
             query_.push_back(words);
     }
 }
 
 
-Query::Query(void *segmentor, Filter filter, Replacer replacer,
-             const vector<string> &keyword) :
+Query::Query(const LTP &ltp, const Sentence &keyword) :
     accurate_(false)
 {
-    auto func = [&filter](const string &str){return filter.IsVaild(str);};
-    for (auto & term : keyword){
-        vector<string> words;
-        segmentor_segment(segmentor, term, words);
-        replacer.Process(words);
-        auto ptr = stable_partition(words.begin(), words.end(), func);
-        words.erase(ptr, words.end());
-        if (!words.empty())
-            query_.push_back(words);
+    Sentence words = keyword;
+    ltp.Replace(words);
+    ltp.Filter(words);
+    for (auto & term : words){
+        query_.push_back(vector<string>{term});
     }
 }

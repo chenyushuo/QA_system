@@ -10,9 +10,27 @@
 
 using namespace std;
 
-Document::Document(const std::string &weight_file) : doc_number_(0)
+Document::Document(const string &file_list, const string &weight_file) :
+    doc_number_(0)
 {
-    ifstream fin(weight_file.c_str());
+    ifstream fin(file_list);
+    if (!fin.is_open()){
+        cerr << "can't open file_list!" << endl;
+        exit(1);
+    }
+    string line;
+    while (getline(fin, line)){
+        doc_name_.push_back(line);
+        doc_map_.insert(make_pair(line, doc_number_));
+        doc_number_ ++;
+    }
+    fin.close();
+    
+    fin.open(weight_file.c_str());
+    if (!fin.is_open()){
+        cerr << "can't open weight file!" << endl;
+        exit(1);
+    }
     double w;
     while (fin >> w)
         weight_.push_back(w);
@@ -40,4 +58,19 @@ string Document::operator [] (size_t idx) const{
     if (idx < doc_number_)
         return doc_name_[idx];
     return string();
+}
+
+void Document::Load(ifstream &in){
+    in >> doc_number_;
+    doc_name_.resize(doc_number_);
+    for (size_t i = 0; i < doc_number_; i ++){
+        in >> doc_name_[i];
+        doc_map_.insert(make_pair(doc_name_[i], i));
+    }
+}
+
+void Document::Save(ofstream &out){
+    out << doc_number_ << endl;
+    for (size_t i = 0; i < doc_number_; i ++)
+        out << doc_name_[i] << endl;
 }

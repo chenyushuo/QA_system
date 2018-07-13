@@ -3,26 +3,22 @@
 
 #include <string>
 #include <vector>
-#include <unordered_set>
-#include <algorithm>
 
-#include "filter.h"
-#include "replacer.h"
+#include "my_define.h"
 
-typedef std::vector<std::string> Words;
+class LTP;
 
 class Query{
 private:
     bool accurate_;
-    std::vector<Words> query_;
+    Paragraph query_;
 
 public:
-    Query(void *segmentor, Filter filter, Replacer replacer);
-    Query(void *segmentor, Filter filter, Replacer replacer,
-          const std::vector<std::string> &keyword);
+    Query(const LTP &ltp);
+    Query(const LTP &ltp, const Sentence &keyword);
 
     bool accurate() const{return accurate_;}
-    const std::vector<Words> & query() const{return query_;}
+    const Paragraph & query() const{return query_;}
 
     ~Query() = default;
 };

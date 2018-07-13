@@ -11,22 +11,23 @@
 #include "document.h"
 #include "query.h"
 #include "set_color.h"
+#include "my_define.h"
 
 using namespace std;
 
 void SearchResult::Read(const string &file_name, const Query &query,
-                        vector<Passage> &str_vec,
-                        vector<Passage_flag> &flag_vec, bool inital)
+                        Passage &str_vec,
+                        PassageFlag &flag_vec, bool inital)
 {
     ifstream fin(file_name.c_str());
     string line;
-    vector<Section> selected_words;
-    vector<Section_flag> selected_flag;
+    Paragraph selected_words;
+    ParagraphFlag selected_flag;
     while (getline(fin, line)){
         stringstream in(line);
         istream_iterator<string> iter(in), eof;
-        Section words(iter, eof);
-        Section_flag flag(words.size(), none);
+        Sentence words(iter, eof);
+        SentenceFlag flag(words.size(), none);
         bool marked = inital;
         for (auto & keywords : query.query()){
             if (keywords.size() == 1){
@@ -71,7 +72,7 @@ SearchResult::SearchResult(const PostingList &post, const Query &query,
 }
 
 void SearchResult::Write(ostream &os, const string &type,
-                         const Passage &str_vec, const Passage_flag &flag_vec)
+                         const Paragraph &str_vec, const ParagraphFlag &flag_vec)
 {
     SetColor(os, Color::highlight);
     SetColor(os, blue);
@@ -87,7 +88,7 @@ void SearchResult::Write(ostream &os, const string &type,
                 SetColor(os, white);
                 SetColor(os, closed);
             }
-            //if (j != 0 && isalpha(str_vec[i][j][0]))
+            if (j != 0 && isalpha(str_vec[i][j][0]))
                 os << ' ';
             os << str_vec[i][j];
         }
@@ -95,19 +96,6 @@ void SearchResult::Write(ostream &os, const string &type,
         SetColor(os, closed);
         os << endl;
     }
-    /*for (size_t j = 0; j < str_vec.size(); j ++){
-        if (flag_vec[j]){
-            SetColor(os, red);
-            SetColor(os, Color::highlight);
-        }
-        else{
-            SetColor(os, white);
-            SetColor(os, closed);
-        }
-        //if (j != 0 && isalpha(str_vec[j][0]))
-            os << ' ';
-        os << str_vec[j];
-    }*/
     SetColor(os, white);
     os << endl;
 }

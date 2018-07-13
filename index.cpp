@@ -196,3 +196,64 @@ void Index::SetLength(const size_t doc_number){
     for (size_t i = 0; i < doc_number; i ++)
         length_[i] = sqrt(length_[i]);
 }
+
+void DocPosition::Load(istream & in){
+    in >> docID_;
+    size_t number;
+    in >> number;
+    position_.resize(number);
+    for (size_t i = 0; i < number; i ++)
+        position_[i].Load(in);
+}
+
+void DocPosition::Save(ostream & out){
+    out << docID_ << endl;
+    out << position_.size() << endl;
+    for (size_t i = 0; i < position_.size(); i ++)
+        position_[i].Save(out);
+}
+
+void PostingList::Load(ifstream &in){
+    size_t number;
+    in >> number;
+    posting_.resize(number);
+    for (size_t i = 0; i < number; i ++)
+        posting_[i].Load(in);
+}
+
+void PostingList::Save(ofstream &out){
+    out << posting_.size() << endl;
+    for (size_t i = 0; i < posting_.size(); i ++)
+        posting_[i].Save(out);
+}
+
+void Index::Load(ifstream &in){
+    in >> term_number_;
+    string word;
+    for (size_t i = 0; i < term_number_; i ++){
+        in >> word;
+        term_.push_back(word);
+        term_map_.insert(make_pair(word, i));
+    }
+    dictionary_.resize(term_number_);
+    for (size_t i = 0; i < term_number_; i ++)
+        dictionary_[i].Load(in);
+    size_t doc_number;
+    in >> doc_number;
+    length_.resize(doc_number);
+    for (size_t i = 0; i < doc_number; i ++)
+        in >> length_[i];
+    for (size_t i = 0; i < term_number_; i ++)
+        dictionary_[i].SetWeight(doc_number);
+}
+
+void Index::Save(ofstream &out){
+    out << term_number_ << endl;
+    for (size_t i = 0; i < term_number_; i ++)
+        out << term_[i] << endl;
+    for (size_t i = 0; i < term_number_; i ++)
+        dictionary_[i].Save(out);
+    out << length_.size() << endl;
+    for (size_t i = 0; i < length_.size(); i ++)
+        out << length_[i] << endl;
+}

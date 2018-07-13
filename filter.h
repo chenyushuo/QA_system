@@ -5,17 +5,19 @@
 #include <unordered_set>
 #include <iostream>
 
-class Filter{
+#include "my_define.h"
+
+class StopWordsFilter{
 private:
     std::unordered_set<std::string> stop_words_;
 
 public:
-    Filter(const std::string &stop_word = "stop_words.txt");
+    StopWordsFilter(const std::string &stop_word = stop_word_path);
     bool IsVaild(const std::string &word) const{
         return stop_words_.find(word) == stop_words_.end();
     }
 
-    ~Filter() = default;
+    ~StopWordsFilter() = default;
 };
 
 #endif

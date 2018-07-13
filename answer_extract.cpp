@@ -4,10 +4,12 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <algorithm>
+#include <unordered_map>
 
 #include "search_result.h"
-#include "postag_dll.h"
+#include "ltp.h"
+#include "my_define.h"
 
 using namespace std;
 
@@ -22,27 +24,31 @@ static inline bool empty(const string &str){
     return true;
 }
 
+static inline bool check_type(const string &type, const string &tag){
+    if (type == "n")
+        return tag.find("n") == 0;
+    return type == tag;
+}
+
 void AnswerExtract::calc(const string &type, const double &rate,
-                         const vector<string> &words,
-                         const vector<int> &flag,
-                         map<string, double> &answer_map,
-                         void *postagger)
+                         const Sentence &words,
+                         const SentenceFlag &flag,
+                         unordered_map<string, double> &answer_map,
+                         const LTP &ltp)
 {
-    vector<string> tags;
-    postagger_postag(postagger, words, tags);
+    Sentence tags;
+    ltp.Postag(words, tags);
 
     vector<size_t> mark;
     for (size_t i = 0; i < flag.size(); i ++)
         if (flag[i] == SearchResult::highlight){
-            // cerr << "i = " << i << endl;
             mark.push_back(i);
         }
-    // cerr << "-----" << endl;
     size_t idx = 0;
 
     for (size_t i = 0; i < words.size(); i ++){
         const string &word = words[i];
-        if (type == tags[i] && !empty(word)){
+        if (check_type(type, tags[i]) && !empty(word)){
             while (idx != mark.size() && mark[idx] < i)
                 idx ++;
             double dist = 1E100;
@@ -72,8 +78,8 @@ void AnswerExtract::calc(const string &type, const double &rate,
 
 AnswerExtract::AnswerExtract(const vector<double> &scores,
                              const SearchResult &result,
-                             const vector<string> &query_type,
-                             void *postagger) :
+                             const Sentence &query_type,
+                             const LTP &ltp) :
     score_(0)
 {
     for (size_t i = 0; i < result.size(); i ++){
@@ -81,11 +87,11 @@ AnswerExtract::AnswerExtract(const vector<double> &scores,
         for (auto & type : query_type){
             for (size_t j = 0; j < result.title_[i].size(); j ++){
                 calc(type, score * 0.6, result.title_[i][j],
-                    result.title_flag_[i][j], answer_map_, postagger);
+                    result.title_flag_[i][j], answer_map_, ltp);
             }
             for (size_t j = 0; j < result.snippets_[i].size(); j ++){
                 calc(type, score * 0.4, result.snippets_[i][j],
-                    result.snippets_flag_[i][j], answer_map_, postagger);
+                    result.snippets_flag_[i][j], answer_map_, ltp);
             }
         }
     }
@@ -98,8 +104,8 @@ AnswerExtract::AnswerExtract(const vector<double> &scores,
         }
         vec.push_back(make_pair(ele.second, ele.first));
     }
-    sort(vec.begin(), vec.end());
-    for (auto ele : vec){
-        cerr << ele.first << ' ' << ele.second << endl;
+    sort(vec.rbegin(), vec.rend());
+    for (size_t i = 0; i < 10 && i < vec.size(); i ++){
+        cerr << vec[i].first << ' ' << vec[i].second << endl;
     }
 }

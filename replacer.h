@@ -4,16 +4,18 @@
 #include <string>
 #include <vector>
 
+#include "my_define.h"
+
 class Replacer{
 private:
-    std::vector<std::vector<std::string> > source;
-    std::vector<std::vector<std::string> > dest;
+    Paragraph source;
+    Paragraph dest;
 
 public:
-    Replacer(const std::string &replace_file = "replace.txt");
-    
-    void Process(std::vector<std::string> & vec);
-    
+    Replacer(const std::string &replace_file = replace_file_path);
+
+    void Process(Sentence & vec) const;
+
     ~Replacer() = default;
 };
 
