@@ -12,6 +12,14 @@ typedef std::vector<int> SentenceFlag;
 typedef std::vector<SentenceFlag> ParagraphFlag;
 typedef std::vector<ParagraphFlag> PassageFlag;
 
+#ifdef CYS_COMPUTER
+    #define local_path "/home/cys/QA/code/"
+    #define ltp_model_path "/home/cys/ltp/ltp_data/"
+#else
+    #define local_path "/root/group2/"
+    #define ltp_model_path "/root/group1/ltp-3.4.0/bin/ltp_data/"
+#endif
+
 extern char file_list_path[];
 extern char weight_file_path[];
 extern char stop_word_path[];

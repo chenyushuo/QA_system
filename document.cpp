@@ -20,12 +20,13 @@ Document::Document(const string &file_list, const string &weight_file) :
     }
     string line;
     while (getline(fin, line)){
+        line = local_path + line.substr(2);
         doc_name_.push_back(line);
         doc_map_.insert(make_pair(line, doc_number_));
         doc_number_ ++;
     }
     fin.close();
-    
+
     fin.open(weight_file.c_str());
     if (!fin.is_open()){
         cerr << "can't open weight file!" << endl;

@@ -106,6 +106,6 @@ AnswerExtract::AnswerExtract(const vector<double> &scores,
     }
     sort(vec.rbegin(), vec.rend());
     for (size_t i = 0; i < 10 && i < vec.size(); i ++){
-        cerr << vec[i].first << ' ' << vec[i].second << endl;
+        cout << vec[i].first << ' ' << vec[i].second << endl;
     }
 }
