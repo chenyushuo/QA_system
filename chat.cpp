@@ -51,6 +51,9 @@ string Chat(const string & question){
 	}
 	//cerr << "answer = " << answer << endl;
 	if (answer.find("对不起，你说的我还不懂，能换个说法吗") != string::npos) {
+	    echo = system(("rm " + answer_file).c_str());
+	    echo = system(("rm " + md5_file).c_str());
+	    echo = system("rm wget.txt");
 		return "RUC小图灵想呀想还是没想出来ww，求轻虐_(:3 」∠)_\n";
 	}
 	int b;
