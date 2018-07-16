@@ -10,7 +10,7 @@ void Multiqa::process_conj(const string &str)
 //	cerr << "OK3" << endl;
 	string strq;
 
-	ltp_.Segment(str, cws, LTP::MODIFY);
+	ltp_.Segment(str, cws);
 	ltp_.Postag(cws, pos);
 
 	/*engine_cws = segmentor_create_segmentor("/home/cys/ltp/ltp_data/cws.model");

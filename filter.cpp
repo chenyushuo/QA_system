@@ -18,3 +18,17 @@ StopWordsFilter::StopWordsFilter(const std::string &stop_word){
         fin.close();
     }
 }
+
+SensitiveWordsFilter::SensitiveWordsFilter(const std::string &sensitive_words){
+    ifstream fin(sensitive_words.c_str());
+    if (!fin.is_open()){
+        cerr << "can't open sensitive word!" << endl;
+    }
+    else{
+        string line;
+        while (getline(fin, line)){
+            sensitive_words_.insert(line);
+        }
+        fin.close();
+    }
+}

@@ -104,9 +104,10 @@ ostream & operator << (ostream &os, const SearchResult &result){
     ResetScreen(os);
     SetColor(os, yellow);
     os << "总计" << result.total_number_ << "个文件符合条件" << endl;
-    for (size_t i = 0; i < result.saved_number_; i ++){
+    for (size_t i = 0; i < result.saved_number_ && i < 10; i ++){
         SetColor(os, Color::highlight);
         SetColor(os, blue);
+        os << "第" << i + 1 << "条:" << endl << endl;
         os << "文件名:";
         SetColor(os, closed);
         SetColor(os, white);

@@ -97,12 +97,15 @@ public:
 
     const std::vector<DocPosition> & posting() const{return posting_;}
     bool empty() const{return posting_.empty();}
-    double idf(){return idf_;}
+    double idf() const{return idf_;}
+    size_t size() const{return posting_.size();}
 
     void append(const DocPosition &pos){if (!pos.empty()) posting_.push_back(pos);}
     void append(size_t docID = Document::npos, size_t pos = Segment::npos);
     void SetWeight(const size_t doc_number){
-        idf_ = log(1.0 * doc_number / posting_.size());
+        idf_ = log(1.0 * (doc_number - posting_.size())/ posting_.size());
+        if (idf_ < 0)
+            idf_ = 0;
         for (auto & doc : posting_)
             doc.SetWeight(idf_);
     }

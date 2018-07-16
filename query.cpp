@@ -45,9 +45,17 @@ Query::Query(const LTP &ltp, const Sentence &keyword) :
     accurate_(false)
 {
     Sentence words = keyword;
-    ltp.Replace(words);
     ltp.Filter(words);
     for (auto & term : words){
         query_.push_back(vector<string>{term});
     }
+}
+
+bool Query::in(const std::string &str) const{
+    for (auto & term : query_){
+        for (auto & word : term)
+            if (word == str)
+                return true;
+    }
+    return false;
 }

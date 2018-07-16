@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <sstream>
 
 #define QUESTION "Question:"
 #define ANSWER "Answer:"
@@ -21,8 +22,9 @@
 class Ask
 {
 private:
-	static std::vector<std::string> Keys;
+	static std::vector<std::vector<std::string> > Keys;
 	static std::vector<std::pair<std::string, std::string> > QA;
+	static std::vector<int> QA_level;
 	std::vector<std::string> key;
 	int search();
 public:

@@ -39,6 +39,7 @@ public:
                  const Document &doc_list, size_t limits = 10);
 
     size_t size() const{return saved_number_;}
+    const Paragraph & first() const{return snippets_[0];}
 
     friend class AnswerExtract;
 

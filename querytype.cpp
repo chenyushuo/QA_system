@@ -32,45 +32,38 @@ Querytype::Querytype(const string &que, const LTP &ltp) : _query(que), ltp_(ltp)
 {
 	ltp_.Segment(_query, cws);
 	ltp_.Postag(cws, pos);
-
-	vector<string>::iterator iter_cws = cws.begin();
-	vector<string>::iterator iter_pos = pos.begin();
-
-	while(iter_cws != cws.end())
-	{
-		if(!((*iter_pos).find('n') != string::npos || *iter_pos == "v"))
-		{
-			iter_cws = cws.erase(iter_cws);
-			iter_pos = pos.erase(iter_pos);
-		}
-		else
-		{
-			iter_cws++;
-			iter_pos++;
-		}
-	}
 }
 
-pair<vector<string>, vector<string> > Querytype::getResult()
+pair<vector<string>, string> Querytype::getResult()
 {
 	int maxitimes = 0;
+	bool tele = false;
 
 	string type = "n";
+
+	for(int i = 0; i < (int)Que[0].second.size(); i++)
+		if(_query.find(Que[0].second[i]) != string::npos)
+		{
+			type = Que[0].first;
+			tele = true;
+			break;
+		}
 
 	for (auto iter = Que.begin(); iter != Que.end(); iter++)
 	{
 		int times = 0;
-		for(int i = 0; i < (int)iter->second.size(); i++)
-			if(_query.find(iter->second[i]) != string::npos)
+		for(int i = 0; i < (int)iter->second.size(); i++){
+		    if (find(cws.begin(), cws.end(), iter -> second[i]) != cws.end())
 				times++;
+		}
 
-		if(times > maxitimes)
+		if(!tele && times > maxitimes)
 		{
 			maxitimes = times;
 			type = iter->first;
 		}
 	}
 
-	return make_pair(cws, vector<string>{type});
+	return make_pair(cws, type);
 }
 

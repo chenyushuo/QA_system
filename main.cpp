@@ -17,7 +17,14 @@ int main(int argc, char *args[])
 //			string str;
 //			while (fin >> str)
 //				que += str + " ";
-			query.answer(args[2], cout);
+			ostringstream out;
+			query.answer(args[2], out);
+			string answer = out.str();
+			cout << answer;
+			
+			ofstream fout("QA.log", ios::app);
+			fout << time(0) << endl;
+			fout << answer << endl;
 //		}
 	}
 	/*while (true){

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-Restorer::Restorer(const std::string &restore_file){
+TagRestorer::TagRestorer(const std::string &restore_file){
     ifstream fin(restore_file.c_str());
     int idx = 0;
     string line;
@@ -21,10 +21,22 @@ Restorer::Restorer(const std::string &restore_file){
     fin.close();
 }
 
-void Restorer::Process(const Sentence &words, Sentence &tags) const{
+inline static bool istelephone(const string &str){
+    for (auto & ch : str){
+        if ((isdigit(ch) || ch == '-') == false)
+            return false;
+    }
+    return str.length() >= 8;
+}
+
+void TagRestorer::Process(const Sentence &words, Sentence &tags) const{
     for (size_t j = 0; j < keywords_.size(); j ++)
         for (size_t i = 0; i < words.size(); i ++){
             if (words[i] == keywords_[j])
                 tags[i] = new_tags_[j];
         }
+    for (size_t i = 0; i < words.size(); i ++){
+        if (istelephone(words[i]))
+            tags[i] = "te";
+    }
 }

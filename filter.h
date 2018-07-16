@@ -20,4 +20,16 @@ public:
     ~StopWordsFilter() = default;
 };
 
+class SensitiveWordsFilter{
+private:
+    std::unordered_set<std::string> sensitive_words_;
+public:
+    SensitiveWordsFilter(const std::string &sensitive_words = sensitive_words_path);
+    bool IsVaild(const std::string &word) const{
+        return sensitive_words_.find(word) == sensitive_words_.end();
+    }
+
+    ~SensitiveWordsFilter() = default;
+};
+
 #endif

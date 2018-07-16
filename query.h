@@ -19,6 +19,7 @@ public:
 
     bool accurate() const{return accurate_;}
     const Paragraph & query() const{return query_;}
+    bool in(const std::string &str) const;
 
     ~Query() = default;
 };

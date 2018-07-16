@@ -28,7 +28,7 @@ public:
 	static void initialize();
 	// Querytype() = default;
 	Querytype(const std::string &que, const LTP &ltp);
-	std::pair<Sentence, Sentence> getResult();
+	std::pair<Sentence, std::string> getResult();
 };
 
 #endif

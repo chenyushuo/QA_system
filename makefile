@@ -1,11 +1,11 @@
 objects = main.o queryjr.o chat.o querytype.o ask.o multiqa.o search_engine.o index.o document.o answer_extract.o search_result.o query.o ltp.o replacer.o filter.o restorer.o kbhit.o my_define.o
-pattern = --std=c++11 -g -Wall -O3 -DCYS_COMPUTER
+pattern = --std=c++11 -g -Wall -O3 -DCYS_COMPUTER -DSET_COLOR
 ltp_path = /home/cys/ltp/ltp-3.4.0
 ltp_pattern = -I $(ltp_path)/include/ltp/ -I $(ltp_path)/thirdparty/boost/include
 ltp_link = -Wl,-dn -L $(ltp_path)/lib/ -lsegmentor -lpostagger -lboost_regex -Wl,-dy
 
 run : main
-	reset && ./main -input 机房在何处？
+	reset && ./main -input 院长是谁？
 
 main : $(objects)
 	g++ -o main $(objects) $(ltp_link)
@@ -60,7 +60,7 @@ restorer.o : restorer.cpp restorer.h
 
 kbhit.o : kbhit.cpp kbhit.h
 	g++ -c kbhit.cpp $(pattern)
-	
+
 my_define.o : my_define.cpp my_define.h
 	g++ -c my_define.cpp $(pattern)
 

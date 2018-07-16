@@ -5,17 +5,17 @@
 
 #include "my_define.h"
 
-class Restorer{
+class TagRestorer{
 private:
     Sentence keywords_;
     Sentence new_tags_;
 
 public:
-    Restorer(const std::string &restore_file = restorer_file_path);
+    TagRestorer(const std::string &restore_file = restorer_file_path);
 
     void Process(const Sentence &words, Sentence &tags) const;
 
-    ~Restorer() = default;
+    ~TagRestorer() = default;
 };
 
 #endif

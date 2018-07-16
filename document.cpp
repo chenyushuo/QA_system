@@ -20,7 +20,6 @@ Document::Document(const string &file_list, const string &weight_file) :
     }
     string line;
     while (getline(fin, line)){
-        line = local_path + line.substr(2);
         doc_name_.push_back(line);
         doc_map_.insert(make_pair(line, doc_number_));
         doc_number_ ++;
@@ -57,7 +56,7 @@ size_t Document::append(const string &doc){
 
 string Document::operator [] (size_t idx) const{
     if (idx < doc_number_)
-        return doc_name_[idx];
+        return local_path + doc_name_[idx].substr(2);
     return string();
 }
 

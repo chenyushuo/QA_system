@@ -13,8 +13,7 @@ class QueryJR
 private:
 	LTP ltp_;
 	SearchEngine search_engine_;
-	Chat chat_;
-	
+
 public:
 	QueryJR();
 	void answer(const std::string &que, std::ostream &out);

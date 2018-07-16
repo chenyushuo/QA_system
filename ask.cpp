@@ -2,26 +2,37 @@
 
 using namespace std;
 
-vector<string> Ask::Keys;
+vector<vector<string> > Ask::Keys;
 vector<pair<string, string> > Ask::QA;
+vector<int> Ask::QA_level;
+
+const int TOOLARGE = 2100000000;
 
 void Ask::initialize(ifstream &finKeys, ifstream &finQA)
 {
 	string str, str2, str3;
 	pair<string, string> pr;
-
+	
 	Keys.clear();
 	QA.clear();
-
+	
 	while(getline(finKeys, str))
 	{
 		for(int i = 0; i < (int)str.size(); i++)
 			if(str[i] >= 'a' && str[i] <= 'z')
 				str[i] -= 'a' - 'A';
-		Keys.push_back(str);
+		
+		stringstream ss;
+		ss << str;
+		
+		vector<string> similar;
+		while(ss >> str)
+			similar.push_back(str);
+	
+		Keys.push_back(similar);
 	}
-
-	int state = -1;
+	
+	int state = -1, level;
 	while(getline(finQA, str))
 	{
 		if(str == QUESTION)
@@ -30,7 +41,11 @@ void Ask::initialize(ifstream &finKeys, ifstream &finQA)
 			{
 				pr = make_pair(str2, str3);
 				QA.push_back(pr);
+				QA_level.push_back(level);
 			}
+			getline(finQA, str);
+			level = str[0] - '0';
+		//	cout << level << endl;
 			str2 = "";
 			state = 0;
 		}
@@ -60,8 +75,9 @@ void Ask::initialize(ifstream &finKeys, ifstream &finQA)
 	{
 		pr = make_pair(str2, str3);
 		QA.push_back(pr);
+		QA_level.push_back(level);
 	}
-
+	
 //	cerr << QA.size() << endl << Keys.size() << endl;
 }
 
@@ -72,8 +88,8 @@ int Ask::search()
 	else
 	{
 		int maxi = 0, maxloc = 0;
-		double maxi2 = 0.0;
-
+		int mini = TOOLARGE;
+		
 		for(int i = 0; i < (int)QA.size(); i++)
 		{
 			int num = 0;
@@ -81,14 +97,15 @@ int Ask::search()
 				if(QA[i].first.find(key[j]) != string::npos)
 					num++;
 
-			if(num > maxi || (num == maxi && (double)num / QA[i].first.size() > maxi2))
+			if(num > maxi || (num == maxi && mini > QA_level[i]))
 			{
 				maxi = num;
-				maxi2 = (double)num / QA[i].first.size();
+				mini = QA_level[i];
 				maxloc = i;
 			}
 		}
-
+		
+		//cout << QA_level[maxloc] << endl;
 		return maxloc;
 	}
 }
@@ -98,22 +115,27 @@ Ask::Ask(string que)
 	for(int i = 0; i < (int)que.size(); i++)
 		if(que[i] >= 'a' && que[i] <= 'z')
 			que[i] -= 'a' - 'A';
-
+	
 	for(int i = 0; i < (int)Keys.size(); i++)
-		if(que.find(Keys[i]) != string::npos)
-			key.push_back(Keys[i]);
+		for(int j = 0; j < (int)Keys[i].size(); j++)
+			if(que.find(Keys[i][j]) != string::npos)
+			{
+				key.push_back(Keys[i][0]);
+				break;
+			}
+			
 }
 
 string Ask::getResult()
 {
 	int res_int = search();
 	string res_str;
-
+	
 	if(res_int < 0)
 		res_str = NOT_FOUND;
 	else
 		res_str = QA[res_int].second;
-
+	
 	return res_str;
 }
 

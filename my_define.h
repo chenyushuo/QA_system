@@ -25,6 +25,7 @@ extern char weight_file_path[];
 extern char stop_word_path[];
 extern char replace_file_path[];
 extern char restorer_file_path[];
+extern char sensitive_words_path[];
 extern char querytype_path[];
 extern char data_file_path[];
 extern char speckey_path[];

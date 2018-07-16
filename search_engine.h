@@ -54,9 +54,9 @@ public:
                         const size_t limits = 10);
 
     std::pair<std::string, double> Search(const Sentence &keyword,
-                                          const Sentence &query_type);
+                                          const std::string &query_type);
 
-    std::pair<std::string, double> Search(const std::pair<Sentence, Sentence> &pr){
+    std::pair<std::string, double> Search(const std::pair<Sentence, std::string> &pr){
         return Search(pr.first, pr.second);
     }
 

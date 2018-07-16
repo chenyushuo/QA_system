@@ -26,11 +26,14 @@ private:
 public:
     AnswerExtract(const std::vector<double> &scores,
                   const SearchResult &result,
-                  const Sentence &query_type,
+                  const std::string &query_type,
                   const LTP &ltp);
 
     std::string answer() const{return answer_;}
     double score() const{return score_;}
+    
+    void SetAnswer(const Paragraph &para);
+    void SetScore(const double &value){score_ = value;}
 
     ~AnswerExtract() = default;
 };

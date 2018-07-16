@@ -21,8 +21,10 @@
 
 using namespace std;
 
-const double SearchEngine::kLimit = 4000.0;
+const double SearchEngine::kLimit = 2500.0;
 const size_t SearchEngine::npos = -1;
+
+inline static double sqr(const double &x){return x * x;}
 
 void SearchEngine::LoadFile(const size_t idx, const string &file_name, Index &index,
                             const LTP &ltp)
@@ -165,6 +167,7 @@ void SearchEngine::BasicRankedSearch(const Paragraph & query,
                                      vector<double> &final_scores, const double rate)
 {
     vector<double> scores(final_scores.size(), 0);
+    vector<double> times(final_scores.size(), 0);
     for (size_t i = 0; i < query.size(); i ++){
         const Sentence & term = query[i];
         PostingList cur;
@@ -179,28 +182,16 @@ void SearchEngine::BasicRankedSearch(const Paragraph & query,
             }
         }
         cur.SetWeight(final_scores.size());
-        double weight_of_query = term_frequency[i] * cur.idf();
+        double weight_of_query = term_frequency[i];
+        //cerr << "weight_of_query = " << weight_of_query << endl;
         for (auto & doc : cur.posting()){
             scores[doc.docID()] += weight_of_query * doc.weight();
-        }
-
-        if (term.size() > 1){
-            string total;
-            for (auto & word : term)
-                total += word;
-            cur = idx[total];
-            cur.SetWeight(final_scores.size());
-            weight_of_query = term_frequency[i] * cur.idf() * term.size();
-            for (auto & doc : cur.posting()){
-                scores[doc.docID()] += weight_of_query * doc.weight();
-            }
+            times[doc.docID()] ++;
         }
     }
 
     for (size_t i = 0; i < scores.size(); i ++){
-        double len = idx.length(i);
-        if (len != 0)
-            scores[i] /= len;
+        scores[i] *= sqr(times[i] / query.size());
     }
 
     for (size_t i = 0; i < final_scores.size(); i ++)
@@ -268,16 +259,26 @@ SearchResult SearchEngine::Search(const Query &query, vector<double> &scores,
 }
 
 pair<string, double> SearchEngine::Search(const Sentence &keyword,
-                                          const Sentence &query_type)
+                                          const string &query_type)
 {
-    // cerr << "query_type = " << query_type[0] << endl;
+    //cerr << "question : ";
+    //for (auto & ele : keyword)
+    //    cerr << ele << ' ';
+    //cerr << endl;
+    //cerr << "query_type = " << query_type << endl;
     Query query(ltp_, keyword);
     vector<double> scores(doc_list_.doc_number(), 0);
     SearchResult result = Search(query, scores, 20);
     sort(scores.rbegin(), scores.rend());
     AnswerExtract answer_extract(scores, result, query_type, ltp_);
+    if (query.in(answer_extract.answer())){
+        answer_extract.SetAnswer(result.first());
+        answer_extract.SetScore(kLimit + 2);
+    }
     // cerr << "答案为：" << answer_extract.answer() << endl;
-    // cerr << result << endl;
+    /*cerr << result << endl;
+    for (size_t i = 0; i < 10; i ++)
+       cerr << scores[i] << endl;*/
     return make_pair(answer_extract.answer(), answer_extract.score());
 }
 

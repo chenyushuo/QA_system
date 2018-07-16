@@ -13,11 +13,14 @@
 
 using namespace std;
 
-LTP::LTP(const string &stop_words_file, const string &replace_file,
+LTP::LTP(const string &stop_words_file,
+         const string &sensitive_words_file,
+         const string &replace_file,
          const string &restorer_file) :
     segmentor_(segmentor_create_segmentor(cws_path)),
     postagger_(postagger_create_postagger(pos_path)),
-    filter_(stop_words_file),
+    stop_words_filter_(stop_words_file),
+    sensitive_words_filter_(sensitive_words_file),
     replacer_(replace_file),
     restorer_(restorer_file)
 {
@@ -29,7 +32,7 @@ void LTP::Replace(Sentence &words) const{
 }
 
 void LTP::Filter(Sentence &words) const{
-    auto func = [this](const string &str){return this -> filter_.IsVaild(str);};
+    auto func = [this](const string &str){return this -> stop_words_filter_.IsVaild(str);};
     auto ptr = stable_partition(words.begin(), words.end(), func);
     words.erase(ptr, words.end());
 }
@@ -40,8 +43,8 @@ void LTP::Restore(const Sentence &words, Sentence &tags) const{
 
 void LTP::Segment(const std::string &term, Sentence &words, MODE mode) const{
     segmentor_segment(segmentor_, term, words);
+    Replace(words);
     if (mode == MODIFY){
-        Replace(words);
         Filter(words);
     }
 }
