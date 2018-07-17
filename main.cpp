@@ -21,10 +21,11 @@ int main(int argc, char *args[])
 			query.answer(args[2], out);
 			string answer = out.str();
 			cout << answer;
-			
+
 			ofstream fout("QA.log", ios::app);
-			fout << time(0) << endl;
-			fout << answer << endl;
+			fout << "time: " << time(0) << endl;
+			fout << "query: " << args[2] << endl;
+			fout << "answer: " << answer << endl;
 //		}
 	}
 	/*while (true){
