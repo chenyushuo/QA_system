@@ -108,7 +108,7 @@ AnswerExtract::AnswerExtract(const vector<double> &scores,
 
     if (query_type != "ns" && query_type != "nh" && query_type != "te")
         score_ = 0;
-    answer_ += "\n";
+    //answer_ += "\n";
 }
 
 void AnswerExtract::SetAnswer(const Paragraph &para){

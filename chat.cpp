@@ -136,6 +136,9 @@ string Chat(const string & question){
 					ret_str = ret_str + '\n';
 					i++;
 				}
+				else if (answer[i] == '\\' && answer[i + 1] == 'r'){
+				    i ++;
+				}
 				else
 					if (isspace(answer[i]) == false)
 						ret_str = ret_str + answer[i];

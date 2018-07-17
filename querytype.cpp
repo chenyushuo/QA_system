@@ -64,6 +64,7 @@ pair<vector<string>, string> Querytype::getResult()
 		}
 	}
 
+    ltp_.Filter(cws);
 	return make_pair(cws, type);
 }
 

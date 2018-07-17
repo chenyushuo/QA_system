@@ -31,6 +31,7 @@ public:
 
     std::string answer() const{return answer_;}
     double score() const{return score_;}
+    void Fix(){answer_ += "\n";}
     
     void SetAnswer(const Paragraph &para);
     void SetScore(const double &value){score_ = value;}

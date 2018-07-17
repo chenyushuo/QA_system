@@ -30,7 +30,7 @@ public:
         const std::string &restorer_file = restorer_file_path);
 
     bool IsVaildAnswer(const std::string &str) const{
-        return sensitive_words_filter_.IsVaild(str);
+        return stop_words_filter_.IsVaild(str) && sensitive_words_filter_.IsVaild(str);
     }
     void Filter(Sentence &words) const;
     void Restore(const Sentence &words, Sentence &tags) const;

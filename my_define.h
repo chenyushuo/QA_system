@@ -16,7 +16,7 @@ typedef std::vector<ParagraphFlag> PassageFlag;
     #define local_path "/home/cys/QA/code/"
     #define ltp_model_path "/home/cys/ltp/ltp_data/"
 #else
-    #define local_path "/root/group2/"
+    #define local_path "/root/group6/"
     #define ltp_model_path "/root/group1/ltp-3.4.0/bin/ltp_data/"
 #endif
 

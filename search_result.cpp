@@ -122,3 +122,15 @@ ostream & operator << (ostream &os, const SearchResult &result){
     SetColor(os, closed);
     return os;
 }
+
+const Paragraph SearchResult::ReloadFirst() const{
+    ifstream fin((doc_[0] + ".body").c_str());
+    string line;
+    Paragraph result;
+    while (getline(fin, line)){
+        stringstream in(line);
+        istream_iterator<string> iter(in), eof;
+        result.push_back(Sentence(iter, eof));
+    }
+    return result;
+}

@@ -53,9 +53,11 @@ Query::Query(const LTP &ltp, const Sentence &keyword) :
 
 bool Query::in(const std::string &str) const{
     for (auto & term : query_){
-        for (auto & word : term)
+        for (auto & word : term){
+            //cerr << "word = '" << word << "' '" << str << "'" << endl;
             if (word == str)
                 return true;
+        }
     }
     return false;
 }

@@ -261,19 +261,28 @@ SearchResult SearchEngine::Search(const Query &query, vector<double> &scores,
 pair<string, double> SearchEngine::Search(const Sentence &keyword,
                                           const string &query_type)
 {
-    //cerr << "question : ";
-    //for (auto & ele : keyword)
-    //    cerr << ele << ' ';
-    //cerr << endl;
-    //cerr << "query_type = " << query_type << endl;
+    /*cerr << "question : ";
+    for (auto & ele : keyword)
+        cerr << ele << ' ';
+    cerr << endl;
+    cerr << "query_type = " << query_type << endl;*/
     Query query(ltp_, keyword);
     vector<double> scores(doc_list_.doc_number(), 0);
     SearchResult result = Search(query, scores, 20);
     sort(scores.rbegin(), scores.rend());
     AnswerExtract answer_extract(scores, result, query_type, ltp_);
-    if (query.in(answer_extract.answer())){
-        answer_extract.SetAnswer(result.first());
-        answer_extract.SetScore(kLimit + 2);
+    if (answer_extract.score() != 0 && query.in(answer_extract.answer())){
+        //cerr << "empty = " << result.first().empty() << endl;
+        if (result.first().empty()){
+            answer_extract.SetAnswer(result.ReloadFirst());
+        }
+        else{
+            answer_extract.SetAnswer(result.first());
+        }
+        answer_extract.SetScore(kLimit + 1);
+    }
+    else{
+        answer_extract.Fix();
     }
     // cerr << "答案为：" << answer_extract.answer() << endl;
     /*cerr << result << endl;

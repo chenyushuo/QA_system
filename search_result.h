@@ -40,6 +40,7 @@ public:
 
     size_t size() const{return saved_number_;}
     const Paragraph & first() const{return snippets_[0];}
+    const Paragraph ReloadFirst() const;
 
     friend class AnswerExtract;
 
